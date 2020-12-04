@@ -9,20 +9,49 @@ using UnityEngine;
 public class WeaponAttack : MonoBehaviour
 {
     public InputController input;
+    public Animator animator;
     public AudioSource weaponSoundSource;
+    public float timeOfAttack;
+
+    float timeSinceAttack;
+    bool attacked;
+
+    void Start()
+    {
+        attacked = false;    
+    }
 
     void Update()
     {
-        // If player goes for an attack. 
-        if(input.DrillDown)
+        if(attacked)
         {
-            // Play attack animation
+            timeSinceAttack += Time.deltaTime;
+            if(timeSinceAttack >= timeOfAttack)
+            {
+                timeSinceAttack = 0;
+                attacked = false;
+            }
+        }
+        
+        if(input.DrillDown & !attacked)
+        {
+            attacked = true;
+            animator.SetTrigger("Attack");
             weaponSoundSource.Play();
         }   
     }
 
     private void OnTriggerEnter2D(Collider2D o)
     {
-        
+        if(o.CompareTag("Enemy") || o.CompareTag("Player"))
+        {
+            
+            o.transform.GetComponent<Death>().Die(transform.position - o.transform.position);
+        }
+    }
+
+    public bool IsAttacking()
+    {
+        return attacked;
     }
 }

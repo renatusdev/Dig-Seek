@@ -8,8 +8,6 @@ using UnityEngine.Events;
 public class PlayerController : MonoBehaviour
 {
     #region Variables
-    private static readonly float GROUNDELEVATION = 0.01f;
-
     [Header("Movement")]
     [Range(0, 20)]  public int movementSpeed;
     [Range(0, 20)]  public int gravitySpeed;
@@ -78,12 +76,12 @@ public class PlayerController : MonoBehaviour
 
     private bool IsGrounded()
     {
-        if(Physics2D.BoxCast(transform.position, m_Collider.size, 0, Vector2.down, GROUNDELEVATION, groundLayer))
+        if(Physics2D.OverlapCircle((Vector2)transform.position + (Vector2.down * 0.25f), 0.3f, groundLayer))
         {
             m_Animator.SetBool("IsGrounded", true);
             return isGrounded = true;
         }
-        
+
         m_Animator.SetBool("IsGrounded", false);
         return isGrounded = false;
     }
@@ -123,7 +121,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void Movement()
+    void Movement()     
     {   
         float horz = m_Input.Move.x;
 

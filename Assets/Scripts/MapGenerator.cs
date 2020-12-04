@@ -35,11 +35,10 @@ public class MapGenerator : MonoBehaviour
     void Start()
     {
         if(randomize)
-            seed = System.DateTime.Now.GetHashCode();   
+            seed = System.DateTime.Now.GetHashCode() % 1000;   
 
         undergroundTileMap = GetComponentInChildren<Tilemap>();
-        // StartCoroutine(GradualRenderMapWithTile(undergroundTileMap, underground, GenerateMap(width, height, seed, heightDivisor, surfaceNoiseScale, filledUndergroundPercentage)));
-        RenderMap(backUndergroundTileMap, backUnderground, GenerateMap(width, height, seed, heightDivisor, surfaceNoiseScale, filledUndergroundPercentage));
+        RenderMap(backUndergroundTileMap, backUnderground, new int[width, height]);
         RenderMapWithTile(undergroundTileMap, underground, GenerateMap(width, height, seed, heightDivisor, surfaceNoiseScale, filledUndergroundPercentage));
     }
 
@@ -50,14 +49,6 @@ public class MapGenerator : MonoBehaviour
                     tilemap.SetTile(new Vector3Int(x,y,0), tile);
     }
     
-    void RenderMapWithTile(Tilemap tilemap, Tile tile, int[,] map)
-    {
-        for(int y = 0; y <= map.GetUpperBound(1); y++)
-            for(int x = 0; x <= map.GetUpperBound(0); x++)
-                if(map[x,y] == 1)
-                    tilemap.SetTile(new Vector3Int(x,y,0), tile);
-    }
-
     IEnumerator GradualRenderMapWithTile(Tilemap tilemap, Tile tile, int[,] map)
     {
         for(int y = 0; y <= map.GetUpperBound(1); y++)
@@ -70,38 +61,23 @@ public class MapGenerator : MonoBehaviour
             }
     }
 
-    int[,] GenerateEmptyMap(int width, int height, bool empty)
+    void RenderMapWithTile(Tilemap tilemap, Tile tile, int[,] map)
+    {
+        for(int y = 0; y <= map.GetUpperBound(1); y++)
+            for(int x = 0; x <= map.GetUpperBound(0); x++)
+                if(map[x,y] == 1)
+                    tilemap.SetTile(new Vector3Int(x,y,0), tile);
+    }
+
+    int[,] GenerateEmptyMap(int width, int height)
     {
         int[,] map = new int[width, height];
 
         for(int y = 0; y < height; y++)
             for(int x = 0; x < width; x++)
-                if(empty)
-                    map[x,y] = 0;
-                else
                     map[x,y] = 1;
 
         return map;
-    }
-
-    void GenerateHeightMap(int[,] map, int seed, float surfaceNoiseScale, int surfaceNoiseDepth)
-    {
-        for(int x = 0; x < width; x++)
-        {
-            float xPos = x + seed;
-
-            // Random value from [0, 1]
-            float rndSurfaceDepth = Mathf.PerlinNoise((float)xPos/surfaceNoiseScale, (float)xPos/surfaceNoiseScale);
-
-            // Map it to [0, maxSurfaceNoiseHeight]
-            rndSurfaceDepth *= surfaceNoiseDepth;
-
-            // Convert to int
-            rndSurfaceDepth = Mathf.FloorToInt(rndSurfaceDepth);
-
-            for(int y = 0; y < (height+1) - rndSurfaceDepth; y++)
-                map[x,y] = 1;
-        }
     }
 
     int [,] GenerateMooreCAMap(int[,] map, int seed, int fillPercentage, int maxHeight)
@@ -117,7 +93,7 @@ public class MapGenerator : MonoBehaviour
             System.Random rnd = new System.Random(seed);
             
             for(int y = 0; y <= clampedHeight; y++)
-                for(int x = 0; x <= map.GetUpperBound(0); x++)
+                for(int x = 0; x < map.GetUpperBound(0); x++)
                     // Edges will have tiles.
                     if(x == 0 || y == 0 || x == width-1 || y == clampedHeight)
                         map[x,y] = 1;
@@ -127,7 +103,7 @@ public class MapGenerator : MonoBehaviour
 
         void GenerateMooreNeighbourhood()
         {
-            for(int y = 1; y < clampedHeight; y++)
+            for(int y = 1; y <= clampedHeight; y++)
                 for(int x = 1; x < map.GetUpperBound(0); x++)
                 {
                     int neighbours = GetSurroundingTiles(x, y);
@@ -154,12 +130,32 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
+    void GenerateHeightMap(int[,] map, int seed, float surfaceNoiseScale, int surfaceNoiseDepth)
+    {
+        for(int x = 0; x <= map.GetUpperBound(0); x++)
+        {
+            float pos = (x + seed)/surfaceNoiseScale;
+
+            // Random value from [0, 1]
+            float rndSurfaceDepth = Mathf.PerlinNoise(pos, seed);
+            
+            // Map it from [0, maxSurfaceNoiseHeight]
+            rndSurfaceDepth *= surfaceNoiseDepth;
+
+            // Convert to int
+            rndSurfaceDepth = Mathf.FloorToInt(rndSurfaceDepth);
+
+            for(int y = 0; y < (map.GetUpperBound(1)+1) - rndSurfaceDepth; y++)
+                map[x,y] = 1;
+        }
+    }
+
     int [,] GenerateMap(int width, int height, int seed, int heightDivisor, float surfaceNoiseScale, int filledUndergroundPercentage)
     {
         int[,] map = new int[width, height];
 
         GenerateHeightMap(map, seed, surfaceNoiseScale, heightDivisor);
-        GenerateMooreCAMap(map, seed ,filledUndergroundPercentage, heightDivisor);
+        GenerateMooreCAMap(map, seed, filledUndergroundPercentage, heightDivisor);
         
         return map;
     }

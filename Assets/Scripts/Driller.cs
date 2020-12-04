@@ -10,8 +10,8 @@ public class Driller : PlayerController
     public AudioClip startSound;
     public AudioClip runningSound;
 
-    float lastRotation;
-
+    int lastRotation;
+    
     protected override void Update()
     {
         base.Update();
@@ -19,24 +19,22 @@ public class Driller : PlayerController
         // Drill Rotation
         {
             drillSlot.rotation = Quaternion.Euler(0,0,lastRotation);
+
             if(!m_Input.Move.Equals(Vector2.zero))
             {
-                // Horizontal Drill Rotation
-                lastRotation = (m_Input.Move.x - 1) * 90;
+                int x = Mathf.FloorToInt(m_Input.Move.x);
+                int y = Mathf.FloorToInt(m_Input.Move.y);
 
-                // Vertical Drill Rotation
-                if(m_Input.Move.y != 0)
+                // Diagonal Drill Rotation
+                if(new Vector2(Mathf.Abs(x), Mathf.Abs(y)).Equals(Vector2.one))
                 {
-                    lastRotation = m_Input.Move.y * 90;
-
-                    // If the player points the drill downward (which can overlap the ground)
-                    if(m_Input.Move.y == -1 & isGrounded)
-                    {
-                        if(!movementSoundSource.isPlaying)
-                            PlaySound(movementSoundSource, soundJump);
-                        jumping = true;
-                    }
+                    lastRotation = y*45 + Mathf.Abs((x-1))*(y*45);
                 }
+                // Up-Down-Left-Right rotation.
+                else
+                {
+                    lastRotation = (Mathf.Abs((x - 1)) * 90) * Mathf.Abs(x) + y*90;
+                }   
             }
         }
     
@@ -48,12 +46,11 @@ public class Driller : PlayerController
         base.FixedUpdate();
     }
 
-
-
     private void Drilling()
     {
         if(m_Input.DrillDown)
         {
+            drillSlot.gameObject.SetActive(true);
             PlaySound(drillSoundSource, startSound);
         }
         else if(m_Input.DrillHold)
@@ -71,6 +68,7 @@ public class Driller : PlayerController
         }
         else if(m_Input.DrillUp)
         {
+            drillSlot.gameObject.SetActive(false);
             PlaySound(drillSoundSource, startSound);
         }
         else

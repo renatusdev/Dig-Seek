@@ -5059,12 +5059,13 @@ GameObject:
   - component: {fileID: 403359335746372942}
   - component: {fileID: 403359335746372943}
   - component: {fileID: 403359335746372941}
-  - component: {fileID: 403359335746372938}
   - component: {fileID: 403359335746372939}
   - component: {fileID: 5150207567249277009}
+  - component: {fileID: 978741263}
+  - component: {fileID: 978741262}
   m_Layer: 0
   m_Name: Hider
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5169,7 +5170,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 1
   m_UseAutoMass: 1
-  m_Mass: 1.5
+  m_Mass: 0.57612866
   m_LinearDrag: 0
   m_AngularDrag: 0
   m_GravityScale: 0
@@ -5178,32 +5179,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!61 &403359335746372938
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 403359335746372944}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 0.75, y: 1}
-  m_EdgeRadius: 0
 --- !u!114 &403359335746372939
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5228,7 +5203,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6f514aad8255a64fa4f752ad44fbd84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movementSpeed: 14
+  movementSpeed: 12
   gravitySpeed: 4
   gravityMultiplierOnFall: 12
   smallJumpGravityMultiplier: 12
@@ -5242,11 +5217,44 @@ MonoBehaviour:
   movementSoundSource: {fileID: 403359336710575569}
   soundFootStep: {fileID: 8300000, guid: c53bb92ee7cfb634bb8c703d4d11ba01, type: 3}
   soundJump: {fileID: 8300000, guid: 21ff4efcf14ee8a4c8435d81bcc1aeb2, type: 3}
+  deathRagdoll: {fileID: 0}
   drillSlot: {fileID: 403359336037984358}
   drillParticle: {fileID: 403359335538766954}
   drillSoundSource: {fileID: 403359334641731521}
   startSound: {fileID: 8300000, guid: d38cceea00f752e4c998f3896f1aec0d, type: 3}
   runningSound: {fileID: 8300000, guid: 793d78f33c617fd4dacf1d84ae63aa31, type: 3}
+--- !u!70 &978741263
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 403359335746372944}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0.0033729076, y: -0.033770323}
+  m_Size: {x: 0.7459073, y: 0.93245935}
+  m_Direction: 0
+--- !u!114 &978741262
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 403359335746372944}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2caf73b10cc372f46ba1ce106d667cb3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  originalSprite: {fileID: 403359335746372943}
+  deadBody: {fileID: 312394888748581983, guid: 542d82bc407d2c34aa5ace4a0fa1a945, type: 3}
+  isDead: 0
+  drill: {fileID: 403359335904196582}
 --- !u!1 &403359335904196582
 GameObject:
   m_ObjectHideFlags: 0
@@ -5386,7 +5394,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &403359336037984358
 Transform:
   m_ObjectHideFlags: 0
@@ -5394,7 +5402,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 403359336037984361}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: -0.38268343, w: 0.92387956}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -5402,7 +5410,7 @@ Transform:
   - {fileID: 403359335538766955}
   m_Father: {fileID: 403359335746372945}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -45}
 --- !u!1 &403359336169167645
 GameObject:
   m_ObjectHideFlags: 0
