@@ -9,8 +9,8 @@ public class Drill : MonoBehaviour
 
     private void OnCollisionStay2D(Collision2D c)
     {
-        // If the drill has collided with the player and the player is drilling
-        if(c.collider.CompareTag("Terrain") & input.DrillHold)
+        // If the drill has collided with terrain
+        if(c.collider.CompareTag("Terrain"))
         {
             foreach(ContactPoint2D point in c.contacts)
                 tiles.DestroyTileAt(point);

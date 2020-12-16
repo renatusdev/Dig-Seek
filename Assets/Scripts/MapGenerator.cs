@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -29,7 +29,9 @@ public class MapGenerator : MonoBehaviour
     public Tilemap undergroundTileMap;
     public Tilemap backUndergroundTileMap;
     public Tile underground;
+    public TileBase hazardous;
     public Tile backUnderground;
+
     #endregion
 
     void Start()
@@ -54,8 +56,12 @@ public class MapGenerator : MonoBehaviour
         for(int y = 0; y <= map.GetUpperBound(1); y++)
             for(int x = 0; x <= map.GetUpperBound(0); x++)
             {
-                if(map[x,y] == 1)
+                if(map[x,y] == 0)
+                    tilemap.SetTile(new Vector3Int(x,y,0), null);
+                else if(map[x,y] == 1)
                     tilemap.SetTile(new Vector3Int(x,y,0), tile);
+                else if(map[x,y] == 2)
+                    tilemap.SetTile(new Vector3Int(x,y,0), hazardous);
 
                 yield return new WaitForEndOfFrame();
             }
@@ -65,8 +71,12 @@ public class MapGenerator : MonoBehaviour
     {
         for(int y = 0; y <= map.GetUpperBound(1); y++)
             for(int x = 0; x <= map.GetUpperBound(0); x++)
-                if(map[x,y] == 1)
+                if(map[x,y] == 0)
+                    tilemap.SetTile(new Vector3Int(x,y,0), null);
+                else if(map[x,y] == 1)
                     tilemap.SetTile(new Vector3Int(x,y,0), tile);
+                else if(map[x,y] == 2)
+                    tilemap.SetTile(new Vector3Int(x,y,0), hazardous);
     }
 
     int[,] GenerateEmptyMap(int width, int height)
@@ -156,7 +166,25 @@ public class MapGenerator : MonoBehaviour
 
         GenerateHeightMap(map, seed, surfaceNoiseScale, heightDivisor);
         GenerateMooreCAMap(map, seed, filledUndergroundPercentage, heightDivisor);
-        
+
+        GenerateVeinedTiles(map, 2, seed, 0.1f);
+
         return map;
+    }
+
+    void GenerateVeinedTiles(int[,] map, int index, int seed, float concentration)
+    {
+        int w = map.GetUpperBound(0);
+        int h = map.GetUpperBound(1);
+
+        for(int y = 1; y < h-1; y++)
+            for(int x = 1; x < w-1; x++)
+            {
+                float rnd = Mathf.PerlinNoise((float)(x+seed)/15, (float)(y+seed)/15);
+
+                if(rnd < concentration)
+                    map[x,y] = index;
+            }
+        
     }
 }

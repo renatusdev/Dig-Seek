@@ -2,13 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/*
- * Does the player attack.
- * Registers collider if hit occurs.
- */
 public class WeaponAttack : MonoBehaviour
 {
-    public InputController input;
     public Animator animator;
     public AudioSource weaponSoundSource;
     public float timeOfAttack;
@@ -21,33 +16,28 @@ public class WeaponAttack : MonoBehaviour
         attacked = false;    
     }
 
-    void Update()
+    protected virtual void Update()
     {
-        if(attacked)
+        if(IsAttacking())
         {
             timeSinceAttack += Time.deltaTime;
+
             if(timeSinceAttack >= timeOfAttack)
             {
                 timeSinceAttack = 0;
                 attacked = false;
             }
-        }
-        
-        if(input.DrillDown & !attacked)
-        {
-            attacked = true;
-            animator.SetTrigger("Attack");
-            weaponSoundSource.Play();
         }   
     }
 
-    private void OnTriggerEnter2D(Collider2D o)
+    public void Attack()
     {
-        if(o.CompareTag("Enemy") || o.CompareTag("Player"))
-        {
+        if(attacked)
+            return;
             
-            o.transform.GetComponent<Death>().Die(transform.position - o.transform.position);
-        }
+        attacked = true;
+        animator.SetTrigger("Attack");
+        weaponSoundSource.Play();
     }
 
     public bool IsAttacking()
