@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Back Underground
   m_EditorClassIdentifier: 
   m_Sprite: {fileID: 21300000, guid: 7b3d64acce56d5a4ca75b134ec56187f, type: 3}
-  m_Color: {r: 0.13333334, g: 0.1254902, b: 0.20392159, a: 1}
+  m_Color: {r: 0.13333334, g: 0.1254902, b: 0.20392157, a: 1}
   m_Transform:
     e00: 1
     e01: 0

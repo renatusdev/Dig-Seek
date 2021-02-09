@@ -12,8 +12,7 @@ public class GridUpdater : MonoBehaviour
 
     AstarPath aStar;
 
-    // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         aStar = GetComponent<AstarPath>();
 

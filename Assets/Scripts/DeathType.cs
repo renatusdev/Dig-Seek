@@ -1,0 +1,1 @@
+public enum DeathType { Scythe, Hazard }

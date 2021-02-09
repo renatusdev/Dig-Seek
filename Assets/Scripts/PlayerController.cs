@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,11 +9,9 @@ public class PlayerController : Controller
 {
     #region Variables
     public ParticleSystem jumpSmokeParticle;
-    
-    [Header("Sounds")]
-    public AudioClip soundJump;
+    public InputController m_Input;
 
-    protected InputController m_Input;
+
     BoxCollider2D   m_Collider;
 
     #endregion
@@ -21,10 +19,9 @@ public class PlayerController : Controller
     protected override void Start()
     {
         base.Start();
-        m_Collider          = GetComponent<BoxCollider2D>();    
-        m_Input             = GetComponent<InputController>();
+        m_Input = InputController.i;
+        m_Collider  = GetComponent<BoxCollider2D>();    
     }
-
     protected virtual void Update()
     {
         if(m_Input.JumpDown)
@@ -32,7 +29,7 @@ public class PlayerController : Controller
             if(isGrounded)
             {
                 jumpSmokeParticle.Play();
-                PlaySound(soundSourceMovement, soundJump);
+                PlaySound(kinematicsSS, jumpSFX);
             }
             jumping = true;
         }

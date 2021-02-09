@@ -1,6 +1,7 @@
 using System.Collections;
 using EZCameraShake;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Controller : MonoBehaviour
 {
@@ -12,20 +13,34 @@ public class Controller : MonoBehaviour
     [Range(0, 20)]  public int jumpSpeed;
     [Range(0, 1)]   public float jumpTime;
 
-    public AudioSource soundSourceMovement;
-    public AudioClip soundClipFootstep;
     public bool isGrounded = false;
     public bool isDead = false;
 
     public LayerMask groundLayer;
 
+    public GameObject bloodSpray;
+    public GameObject carcassByScythe;
+    public GameObject carcassByHazard;
+
+    public AnimationHolder thunderbolt;
+
+    public UnityEvent eventOnFreeze;
+    public UnityEvent eventOnUnfreeze;
+
     public bool jumping     { get; protected set;}
     public Vector2 velocity { get; protected set; }    
+
+    [Header("Sounds")]
+    public AudioSource kinematicsSS;
+    public AudioClip footstepSFX;
+    public AudioClip jumpSFX;
 
     protected Animator m_Animator;
     protected SpriteRenderer  m_SpriteRenderer;
     protected Rigidbody2D m_Rigidbody;
     protected float jumpTimer = 0;
+
+    public bool freeze;
 
     protected virtual void Start()
     {
@@ -46,6 +61,9 @@ public class Controller : MonoBehaviour
 
     protected void Movement(float horz)
     {   
+        if(freeze) { return; }
+
+        
         m_Animator.SetBool("IsRunning", horz != 0);
 
         if(horz != 0)
@@ -60,6 +78,8 @@ public class Controller : MonoBehaviour
 
     protected void Jump()
     {
+        if(freeze)
+            return;
         // If the jump timer reached the set jump time.
         if(jumpTimer >= jumpTime)
         {
@@ -107,24 +127,81 @@ public class Controller : MonoBehaviour
             return;
 
         if(col.CompareTag("Scythe"))
-            Die(Color.red);
+            Die(DeathType.Scythe);
         else if(col.CompareTag("Hazard"))
-            Die(Color.green);
+            Die(DeathType.Hazard);
     }
 
-    protected virtual void Die(Color flashColor)
+    protected virtual void Die(DeathType deathType)
     {
         isDead = true;
+        m_SpriteRenderer.enabled = false;
+
+        if(Scoreboard.i != null)
+        {
+            if(this.name.StartsWith("Hider"))
+                Scoreboard.i.AddRedPoint();
+            else    // Seeker died
+                Scoreboard.i.AddBluePoint(ScoreType.ELIMINATION);
+        }
         
         Destroy(GetComponent<Animator>());
-        StartCoroutine(Death(flashColor));
+
+        if(deathType.Equals(DeathType.Scythe))
+        {
+            m_Rigidbody.constraints = RigidbodyConstraints2D.FreezePositionX;
+            Instantiate(carcassByScythe, transform.position, Quaternion.identity);
+            Instantiate(bloodSpray, transform.position, Quaternion.AngleAxis(UnityEngine.Random.Range(0,360), Vector3.forward));
+
+            StartCoroutine(DeathEffects(Color.red));
+        }
+        else if(deathType.Equals(DeathType.Hazard))
+        {
+            Instantiate(carcassByHazard, transform.position, Quaternion.identity);
+            Instantiate(bloodSpray, transform.position, Quaternion.AngleAxis(UnityEngine.Random.Range(0,360), Vector3.forward));
+
+            StartCoroutine(DeathEffects(Color.green));
+        }
     }
 
-    IEnumerator Death(Color flashColor)
+    public void Freeze()
+    {
+        freeze = true;
+        
+        if(m_Rigidbody != null)
+            m_Rigidbody.constraints = RigidbodyConstraints2D.FreezeAll;
+        else
+        {
+            m_Rigidbody = GetComponent<Rigidbody2D>();
+            Freeze();
+            return;
+        }
+        
+        eventOnFreeze.Invoke();
+    }
+    
+    public void Unfreeze()
+    {
+        freeze = false;
+        if(m_Rigidbody != null)
+            m_Rigidbody.constraints = RigidbodyConstraints2D.FreezeRotation;
+        else
+        {
+            m_Rigidbody = GetComponent<Rigidbody2D>();
+            Unfreeze();
+            return;
+        }
+        eventOnUnfreeze.Invoke();
+    }
+
+    IEnumerator DeathEffects(Color flashColor)
     {   
-        // Camera effects
-        CameraShaker.Instance.ShakeOnce(3,20,0.1f,0.4f);
-        ScreenFlash.i.Flash(flashColor, 10);       
+        // Camera and screen flash effects
+        CameraShaker.Instance.ShakeOnce(3,20,0.1f,0.8f);
+        ImageEffects.i.Flash(flashColor, 12);
+        thunderbolt.Play(transform.position, Random.Range(0, 360));
+        
+        // ImageEffects.i.Dim(Color.black, 10, 0.4f);
         yield return new WaitForSeconds(0.1f);
 
         // Slowmotion effect
@@ -133,14 +210,16 @@ public class Controller : MonoBehaviour
 
         // Return time to normal
         Time.timeScale = 1;
+
+        // TODO: Add point
     }
 
     #region Animation Triggers
 
     void OnFootstep()
     {
-        if(!soundSourceMovement.isPlaying)
-            PlaySound(soundSourceMovement, soundClipFootstep);
+        if(!kinematicsSS.isPlaying & !freeze)
+            PlaySound(kinematicsSS, footstepSFX);
     }
     
     void OnJump()

@@ -16,12 +16,13 @@ public class MapGenerator : MonoBehaviour
     [Header("Map Settings")]
     [Range(0,100)]  public int width;
     [Range(0,100)]  public int height;
+    [Range(0,1)]    public float hazardConcentration;
+    public bool gradualGeneration;
 
     [Header("Noise Settings")]
     [Range(0,1000)] public int seed;
     public bool randomize;
-    [Tooltip("This value determines where the surface noise ends and the ground surface begins.")]
-    [Range(0, 14)]  public int heightDivisor;
+
     [Range(35,60)]  public int filledUndergroundPercentage;
     [Range(0,30)]   public float surfaceNoiseScale;
     
@@ -31,17 +32,23 @@ public class MapGenerator : MonoBehaviour
     public Tile underground;
     public TileBase hazardous;
     public Tile backUnderground;
+    public Tile[] gems;
+
+    System.Random rnd;
 
     #endregion
 
     void Start()
     {
-        if(randomize)
-            seed = System.DateTime.Now.GetHashCode() % 1000;   
-
+        rnd = new System.Random(RandomSeed.seed);
+        
         undergroundTileMap = GetComponentInChildren<Tilemap>();
         RenderMap(backUndergroundTileMap, backUnderground, new int[width, height]);
-        RenderMapWithTile(undergroundTileMap, underground, GenerateMap(width, height, seed, heightDivisor, surfaceNoiseScale, filledUndergroundPercentage));
+
+        if(gradualGeneration)
+             StartCoroutine(GradualRenderMapWithTile(undergroundTileMap, underground, GenerateMap(width, height, seed, surfaceNoiseScale, filledUndergroundPercentage)));
+        else
+            RenderMapWithTile(undergroundTileMap, underground, GenerateMap(width, height, seed, surfaceNoiseScale, filledUndergroundPercentage));
     }
 
     void RenderMap(Tilemap tilemap, Tile tile, int[,] map)
@@ -77,6 +84,10 @@ public class MapGenerator : MonoBehaviour
                     tilemap.SetTile(new Vector3Int(x,y,0), tile);
                 else if(map[x,y] == 2)
                     tilemap.SetTile(new Vector3Int(x,y,0), hazardous);
+                else if(map[x,y] == 3)
+                {
+                    tilemap.SetTile(new Vector3Int(x,y,0), gems[UnityEngine.Random.Range(0,gems.Length)]);
+                }
     }
 
     int[,] GenerateEmptyMap(int width, int height)
@@ -99,9 +110,7 @@ public class MapGenerator : MonoBehaviour
         return map;
 
         void GenerateRandomTiles()
-        {
-            System.Random rnd = new System.Random(seed);
-            
+        {            
             for(int y = 0; y <= clampedHeight; y++)
                 for(int x = 0; x < map.GetUpperBound(0); x++)
                     // Edges will have tiles.
@@ -160,16 +169,38 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    int [,] GenerateMap(int width, int height, int seed, int heightDivisor, float surfaceNoiseScale, int filledUndergroundPercentage)
+    int [,] GenerateMap(int width, int height, int seed, float surfaceNoiseScale, int filledUndergroundPercentage)
     {
         int[,] map = new int[width, height];
 
-        GenerateHeightMap(map, seed, surfaceNoiseScale, heightDivisor);
-        GenerateMooreCAMap(map, seed, filledUndergroundPercentage, heightDivisor);
+        for(int y = height-2; y < height; y++)
+            for(int x = 0; x < map.GetUpperBound(0); x++)
+                map[x,y] = 1;
 
-        GenerateVeinedTiles(map, 2, seed, 0.1f);
+
+        GenerateMooreCAMap(map, seed, filledUndergroundPercentage, 2);
+    
+        // Generates Hazards
+        GenerateVeinedTiles(map, 2, seed, hazardConcentration);
+
+        // Generates Gems
+        GenerateGems(map, 3, rnd.Next(3,5));
 
         return map;
+    }
+
+    void GenerateGems(int[,] map, int tag, int amount)
+    {
+        int w = map.GetLength(0);
+        int h = map.GetLength(1);
+        
+        for (int i = 0; i < amount; i++)
+        {
+            int x = rnd.Next(5,w-5); 
+            int y = rnd.Next(5,h-5); 
+         
+            map[x, y] = tag;
+        }
     }
 
     void GenerateVeinedTiles(int[,] map, int index, int seed, float concentration)
@@ -177,10 +208,14 @@ public class MapGenerator : MonoBehaviour
         int w = map.GetUpperBound(0);
         int h = map.GetUpperBound(1);
 
+        int offset = rnd.Next() % 1000;
+
         for(int y = 1; y < h-1; y++)
             for(int x = 1; x < w-1; x++)
             {
-                float rnd = Mathf.PerlinNoise((float)(x+seed)/15, (float)(y+seed)/15);
+                float rnd = Mathf.PerlinNoise((float)(x+offset)/15, (float)(y+offset)/15);
+
+                
 
                 if(rnd < concentration)
                     map[x,y] = index;

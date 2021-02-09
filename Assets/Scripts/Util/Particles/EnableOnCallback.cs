@@ -5,12 +5,13 @@ using UnityEngine;
 [RequireComponent(typeof(ParticleSystem))]
 public class EnableOnCallback : MonoBehaviour
 {
-    public GameObject toEnable;
+    public GameObject[] toEnable;
     public bool destroyOnCallback;
 
     void OnParticleSystemStopped()
     {
-        toEnable.SetActive(true);
+        foreach(GameObject g in toEnable)
+            g.SetActive(true);
         
         if(destroyOnCallback)
             Destroy(this.gameObject);

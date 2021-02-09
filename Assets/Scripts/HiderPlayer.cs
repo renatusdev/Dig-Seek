@@ -5,21 +5,13 @@ public class HiderPlayer : PlayerController
 {
     public Transform drillSlot;
     public ParticleSystem drillParticle;
-
-    public AudioSource drillSoundSource;
-    public AudioClip startSound;
-    public AudioClip runningSound;
-
-    
-    [Header("On Death")]
-
-    [Tooltip("If death occurs by Scythe.")]
-    public GameObject deadBody;
-    [Tooltip("If death occurs by Scythe.")]
-    public GameObject bloodSpray;
     
     int lastRotation;
-    
+
+    [Header("Sounds")]
+    public AudioSource drillSS;
+    public AudioClip throttleSFX;
+
     protected override void Update()
     {
         if(isDead)
@@ -57,7 +49,7 @@ public class HiderPlayer : PlayerController
         if(m_Input.DrillDown)
         {
             drillSlot.gameObject.SetActive(true);
-            PlaySound(drillSoundSource, startSound);
+            PlaySound(drillSS, throttleSFX);
         }
         else if(m_Input.DrillHold)
         {
@@ -65,17 +57,13 @@ public class HiderPlayer : PlayerController
             if(!drillParticle.isPlaying)
                 drillParticle.Play();
 
-            // Drill Sound Effect
-            if(!drillSoundSource.isPlaying)
-                PlaySound(drillSoundSource, runningSound);
-
             // Drill Animation Effect
             m_Animator.SetLayerWeight(1, 1);
         }
         else if(m_Input.DrillUp)
         {
             drillSlot.gameObject.SetActive(false);
-            PlaySound(drillSoundSource, startSound);
+            PlaySound(drillSS, throttleSFX);
         }
         else
         {
@@ -83,21 +71,12 @@ public class HiderPlayer : PlayerController
         }
     }
 
-    protected override void Die(Color flashColor)
+    protected override void Die(DeathType deathType)
     {
-        base.Die(flashColor);
-        
-        // Deactivate original sprite
-        m_SpriteRenderer.enabled = false;
-        
-        // Replace with physics based sprites
-        Instantiate(deadBody, transform.position, Quaternion.identity);
-        Instantiate(bloodSpray, transform.position, Quaternion.AngleAxis(UnityEngine.Random.Range(0,360), Vector3.forward));
-
-        GameObject drill = drillSlot.GetChild(0).gameObject;
-
-        drill.transform.parent = null;
-        drill.AddComponent<Rigidbody2D>();
-        Destroy(drill.GetComponent<Drill>());
+        base.Die(deathType);
+            
+        Destroy(drillSlot.GetComponentInChildren<Drill>());
+        drillSlot.parent = null;
+        drillSlot.gameObject.AddComponent<Rigidbody2D>();
     }
 }

@@ -13,7 +13,7 @@ public class Drill : MonoBehaviour
         if(c.collider.CompareTag("Terrain"))
         {
             foreach(ContactPoint2D point in c.contacts)
-                tiles.DestroyTileAt(point);
+                TileDestruction.i.DestroyTileAt(point);
         }
     }
 }

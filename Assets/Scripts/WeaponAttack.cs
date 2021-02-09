@@ -11,8 +11,11 @@ public class WeaponAttack : MonoBehaviour
     float timeSinceAttack;
     bool attacked;
 
+    public Controller controller;
+
     void Start()
     {
+        controller = GetComponentInParent<Controller>();
         attacked = false;    
     }
 
@@ -20,7 +23,7 @@ public class WeaponAttack : MonoBehaviour
     {
         if(IsAttacking())
         {
-            timeSinceAttack += Time.deltaTime;
+            timeSinceAttack += Time.unscaledDeltaTime;
 
             if(timeSinceAttack >= timeOfAttack)
             {
@@ -32,7 +35,7 @@ public class WeaponAttack : MonoBehaviour
 
     public void Attack()
     {
-        if(attacked)
+        if(attacked || controller.freeze) 
             return;
             
         attacked = true;
