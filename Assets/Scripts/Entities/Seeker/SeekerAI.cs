@@ -100,13 +100,17 @@ public class SeekerAI : Controller
         int vert = 0;
 
         if(direction.x != 0)
+        {
             horz = 1 * (int)Mathf.Sign(direction.x);
+        }
         if(direction.y != 0)
+        {
             vert = 1 * (int)Mathf.Sign(direction.y);
+        }
 
         Movement(horz);
 
-        if(vert == 1 & isGrounded)   
+        if(vert == 1 & isGrounded)
             jumping = true; 
 
         if(vert == -1)

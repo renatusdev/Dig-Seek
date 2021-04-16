@@ -61,18 +61,22 @@ public class Controller : MonoBehaviour
 
     protected void Movement(float horz)
     {   
+        // All entities freeze during game pause
         if(freeze) { return; }
 
-        
+        // Animation
         m_Animator.SetBool("IsRunning", horz != 0);
 
+        // Sprite flipping
         if(horz != 0)
             m_SpriteRenderer.flipX = horz == -1;
 
+        // Create velocity vector
         velocity = Vector2.right * horz;
         velocity.Normalize();
         velocity *= movementSpeed;
 
+        // Add to rigidbody
         m_Rigidbody.velocity = velocity;
     }
 

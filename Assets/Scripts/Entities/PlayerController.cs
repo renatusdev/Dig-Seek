@@ -11,7 +11,6 @@ public class PlayerController : Controller
     public ParticleSystem jumpSmokeParticle;
     public InputController m_Input;
 
-
     BoxCollider2D   m_Collider;
 
     #endregion
